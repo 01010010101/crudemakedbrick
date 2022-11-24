@@ -2,10 +2,8 @@ package web.dao;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import web.model.User;
 
 import javax.persistence.EntityManager;
@@ -13,7 +11,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
-@Component
+@Repository
 public class UserDaoImp implements UserDao {
     @PersistenceContext
     private final EntityManager entityManager;
@@ -37,12 +35,10 @@ public class UserDaoImp implements UserDao {
         entityManager.persist(user);
     }
     @Override
-    @Modifying
-    @Query("update User u SET u = :updatedUser WHERE u.id = :id")
-    public void updateUserById(@Param("id") int id, @Param("updatedUser") User updatedUser) {
-        System.out.println("Are you happy now?");
+    public void updateUserById(int id, User updatedUser) {
+        entityManager.merge(updatedUser);
     }
-        @Override
+    @Override
     public User getUserById(int id) {
         TypedQuery<User> query = entityManager.createQuery(
                 "SELECT u FROM User u WHERE u.id = :id", User.class);
