@@ -2,6 +2,9 @@ package web.dao;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
 import web.model.User;
 
@@ -11,44 +14,38 @@ import javax.persistence.TypedQuery;
 import java.util.List;
 
 @Component
-
 public class UserDaoImp implements UserDao {
-
     @PersistenceContext
     private final EntityManager entityManager;
-
     @Autowired
     public UserDaoImp(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
-
-    public List<User> listAll() {
+    @Override
+    public List<User> getAllUsers() {
         String jpql = "SELECT c FROM User c";
         TypedQuery<User> query = entityManager.createQuery(jpql, User.class);
         return query.getResultList();
     }
-    public void delete(int id) {
+    @Override
+    public void deleteUserById(int id) {
         User user = entityManager.find(User.class, id);
         entityManager.remove(user);
     }
-
     @Override
-    public void save(User user) {
+    public void saveNewUser(User user) {
         entityManager.persist(user);
     }
-
     @Override
-    public void update(int id, User updatedUser) {
-        User userToBeUpdated = show(id);
-        userToBeUpdated.setNickname(updatedUser.getNickname());
-        userToBeUpdated.setOccupation(updatedUser.getOccupation());
-        userToBeUpdated.setEmail(updatedUser.getEmail());
+    @Modifying
+    @Query("update User u SET u = :updatedUser WHERE u.id = :id")
+    public void updateUserById(@Param("id") int id, @Param("updatedUser") User updatedUser) {
+        System.out.println("Are you happy now?");
     }
-
-    @Override
-    public User show(int id) {
+        @Override
+    public User getUserById(int id) {
         TypedQuery<User> query = entityManager.createQuery(
-                "select u from User u where u.id = :id", User.class);
+                "SELECT u FROM User u WHERE u.id = :id", User.class);
         query.setParameter("id", id);
         return query.getSingleResult();
     }
